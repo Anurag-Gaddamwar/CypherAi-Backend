@@ -76,10 +76,10 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     
     Output Format:
     
-    ATS Compatibility Score (in %): Provide an estimated score based on the resume's ATS-friendliness. (provide only score)
-    Content Relevance Score (in %)): Rate the resume's alignment with the target job role. (provide only score)
-    Structure and Formatting Score (in %): Assess the resume's organization and readability. (provide only score)
-    Overall Resume Score (in %): Provide an overall score considering all factors. (provide only score)
+    ATS Compatibility Score (in %): Provide an estimated score based on the resume's ATS-friendliness. The score should be between 50 to 90. (provide only score)
+    Content Relevance Score (in %)): Rate the resume's alignment with the target job role. The score should be between 50 to 90. (provide only score)
+    Structure and Formatting Score (in %): Assess the resume's organization and readability. The score should be between 50 to 90. (provide only score)
+    Overall Resume Score (in %): Provide an overall score considering all factors. The score should be between 50 to 90. (provide only score)
     Strengths: List the resume's top strengths in bullet points, with specific examples from the resume.
     Areas for Improvement: List areas for improvement in bullet points, offering actionable suggestions for each and mention the specific area where there are gramatical errors or any sort of faults if any.
     
