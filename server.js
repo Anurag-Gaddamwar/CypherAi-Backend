@@ -83,9 +83,8 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     Strengths: List the resume's top strengths in bullet points, with specific examples from the resume.
     Areas for Improvement: List areas for improvement in bullet points, offering actionable suggestions for each and mention the specific area where there are gramatical errors or any sort of faults if any.
     
-    Additional Notes:
-    
-    {imp note] - Check properly if the content does not appear to be a resume, and  please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided.        
+   
+    {imp note] - Check properly if the content does not appear to be a resume, and  please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided.Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually align with the job role, so it feels that the score is not genuine.        
     `;
 
     const result = await model.generateContent(prompt);
