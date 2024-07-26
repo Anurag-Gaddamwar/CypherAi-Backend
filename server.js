@@ -50,7 +50,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
 
-    Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. 
+    Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually align with the job role, which makes it hard to believe the score, so be genuine.  
     
     Assessment Criteria:
     
@@ -76,16 +76,15 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     
     Output Format:
     
-    ATS Compatibility Score (in %): Provide an estimated score based on the resume's ATS-friendliness. The score should be between 50 to 90. (provide only score)
-    Content Relevance Score (in %)): Rate the resume's alignment with the target job role. The score should be between 50 to 90. (provide only score)
-    Structure and Formatting Score (in %): Assess the resume's organization and readability. The score should be between 50 to 90. (provide only score)
-    Overall Resume Score (in %): Provide an overall score considering all factors. The score should be between 50 to 90. (provide only score)
+    ATS Compatibility Score (in %): Provide an estimated score based on the resume's ATS-friendliness. The score should be between 0 to 80. (provide only score)
+    Content Relevance Score (in %)): Rate the resume's alignment with the target job role. The score should be between 0 to 90. (provide only score)
+    Structure and Formatting Score (in %): Assess the resume's organization and readability. The score should be between 0 to 90. (provide only score)
+    Overall Resume Score (in %): Provide an overall score considering all factors. The score should be between 0 to 80. (provide only score)
     Strengths: List the resume's top strengths in bullet points, with specific examples from the resume.
     Areas for Improvement: List areas for improvement in bullet points, offering actionable suggestions for each and mention the specific area where there are gramatical errors or any sort of faults if any.
     
    
-    {imp note] - Check properly if the content does not appear to be a resume, and  please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided.Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually align with the job role, so it feels that the score is not genuine.        
-    `;
+    {imp note] - Check properly if the content does not appear to be a resume, and  please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
