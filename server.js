@@ -68,7 +68,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
         - Emphasize skills and experiences that directly relate to the job role. Showcase any expertise or knowledge areas that are crucial for the position, including any special projects or responsibilities that align with the job’s demands.
     5. Areas of Improvement:
         - Assess how well the resume matches the job description. Identify any missing skills, experiences, or qualifications that are important for the role and suggest ways to better align the resume with these requirements.
-        - Provide targeted advice on how to improve the resume. This could include suggestions for rephrasing, adding specific details, improving formatting, or highlighting particular experiences or skills to make the resume more appealing to recruiters for the target job.
+        - Provide targeted advice on how to improve the resume. This could include suggestions for rephrasing, adding specific details, or highlighting particular experiences or skills to make the resume more appealing to recruiters for the target job. (Remember that you can consider giving suggestions about the formatting and structure of the resume, but since you only receive the text response hence, the actual formatting and spacing can't be maintained here)
     
     Output Format:
     
