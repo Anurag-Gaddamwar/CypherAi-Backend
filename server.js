@@ -50,7 +50,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
 
-    Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually align with the job role, which makes it hard to believe the score, so be genuine.  
+    Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually align with the job role, which makes it hard to believe the score, so be analyse very critically and then give me the scores, the scores may be less, doesn't matter, but they should be genuine.  
     
     Assessment Criteria:
     
