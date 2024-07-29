@@ -50,29 +50,25 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
 
-    Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually align with the job role, which makes it hard to believe the score, so be analyse very critically and then give me the scores, the scores may be less, doesn't matter, but they should be genuine.  
+    Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually aligns with the specified job role, which makes it hard to believe the score, so analyse very critically and then give me the scores, the scores may be less, doesn't matter, but they should be genuine.  
     
     Assessment Criteria:
     
     1. ATS Compatibility:
-        - Evaluate the resume's compatibility with Applicant Tracking Systems (ATS).
-        - Identify any formatting or content issues that might hinder ATS parsing.
-        - Suggest adjustments to optimize keyword usage and overall ATS score.
-    
+        - Assess the resume's adherence to ATS standards, including keyword optimization, formatting, and structure.
+        
     2. Content and Relevance:
         - Evaluate the alignment between the resume's content (skills, experience, education) and the requirements of the job role.
-        - Assess the effectiveness of showcasing relevant keywords and accomplishments.
-        - Identify any gaps or missing information crucial for the position.
     
     3. Structure and Formatting:
-        - Review the overall organization and readability of the resume.
-        - Assess the clarity and conciseness of section headings and bullet points.
-        - Consider the resume's formatting in terms of font choice, spacing, and visual appeal.
+        - Assess the overall organization and readability of the resume along with the clarity and conciseness of section headings and bullet points.
     
-    4. Strengths and Weaknesses:
+    4. Strengths:
         - Highlight the resume's most compelling aspects that align with the job requirements (e.g., quantifiable achievements, relevant skills, strong experience).
-        - Pinpoint areas that could be strengthened or expanded (e.g., additional details in project descriptions, highlighting transferable skills).
-        - Offer specific recommendations for improvement, keeping the target job role in mind.
+        - Emphasize skills and experiences that directly relate to the job role. Showcase any expertise or knowledge areas that are crucial for the position, including any special projects or responsibilities that align with the job’s demands.
+    5. Areas of Improvement:
+        - Assess how well the resume matches the job description. Identify any missing skills, experiences, or qualifications that are important for the role and suggest ways to better align the resume with these requirements.
+        - Provide targeted advice on how to improve the resume. This could include suggestions for rephrasing, adding specific details, improving formatting, or highlighting particular experiences or skills to make the resume more appealing to recruiters for the target job.
     
     Output Format:
     
@@ -80,8 +76,8 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     Content Relevance Score (in %)): Rate the resume's alignment with the target job role. The score should be between 0 to 90. (provide only score)
     Structure and Formatting Score (in %): Assess the resume's organization and readability. The score should be between 0 to 90. (provide only score)
     Overall Resume Score (in %): Provide an overall score considering all factors. The score should be between 0 to 80. (provide only score)
-    Strengths: List the resume's top strengths in bullet points, with specific examples from the resume.
-    Areas for Improvement: List areas for improvement in bullet points, offering actionable suggestions for each and mention the specific area where there are gramatical errors or any sort of faults if any.
+    Strengths: List the resume's top strengths, with specific examples from the resume.
+    Areas for Improvement: List areas for improvement, offering actionable suggestions for each and mention the specific area where there are gramatical errors or any sort of faults if any.
     
    
     {imp note] - Check properly if the content does not appear to be a resume, and  please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided.`;
