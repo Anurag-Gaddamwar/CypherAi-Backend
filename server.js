@@ -106,24 +106,24 @@ app.post('/generate-content', async (req, res) => {
     // Extract question from request body
     const { question } = req.body;
 
-    // Retrieve and update conversation history
-    let history = req.session.history || [];
-    history.push(question);
-    if (history.length > 5) {
-      history = history.slice(-5); // Keep the last 5 interactions
-    }
-    req.session.history = history; // Update session history
+let history = req.session.history || [];
+history.push(question);
+if (history.length > 5) {
+  history = history.slice(-5);
+}
+req.session.history = history;
+
     
     // Construct prompt with current and past interactions
-const prompt = `You are CypherAI. The user has been asking about interview preparation. Here is their latest input:
+const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
 
-"${question}"
-
-In the context of the ongoing conversation, respond accordingly. Remember to consider the previous interactions which are as follows:
-
+**Previous Conversations:**
 ${history.join('\n')}
 
-Your response should build upon this conversation and maintain continuity.`;
+**The User Input is:**
+"${question}"
+`;
+
     
     // Generate response from the AI model
     const result = await model.generateContent(prompt);
