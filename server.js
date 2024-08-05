@@ -100,44 +100,36 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 
 app.post('/generate-content', async (req, res) => {
   try {
-    // Get the AI model instance
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-    
-    // Extract question from request body
     const { question } = req.body;
 
-let history = req.session.history || [];
-history.push(question);
-if (history.length > 5) {
-  history = history.slice(-5);
-}
-req.session.history = history;
+    let history = req.session.history || [];
+    history.push(question);
+    if (history.length > 5) {
+      history = history.slice(-5);
+    }
+    req.session.history = history;
 
+    const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews.
+
+    **Previous Conversations:**
+    ${history.join('\n')}
+
+    **The User Input is:**
+    "${question}"
+
+    Please respond based on the user's input and previous conversations. Ensure that your response acknowledges and builds upon the context of the ongoing conversation.`;
     
-    // Construct prompt with current and past interactions
-const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
-
-**Previous Conversations:**
-${history.join('\n')}
-
-**The User Input is:**
-"${question}"
-`;
-
-    
-    // Generate response from the AI model
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = await response.text();
-
-    // Send response back to the client
     res.json({ text });
   } catch (error) {
-    // Log and return error
     console.error('Error generating content:', error);
     res.status(500).json({ error: 'Error generating content' });
   }
 });
+
 
 // Start the server
 app.listen(port, () => {
