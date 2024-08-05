@@ -2,11 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
-const pdfParse = require('pdf-parse');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const Tesseract = require('tesseract.js'); // Add this for OCR
-const session = require('express-session');
-require('dotenv').config();
+const pdfParse = require('pdf-parse');   
+
+const { GoogleGenerativeAI } = require('@google/generative-AI');
+const Tesseract = require('tesseract.js');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -17,17 +19,6 @@ app.use(express.json());
 app.use(cors({
   origin: ['https://cypher-ai.vercel.app', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-}));
-
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24, // 24 hours
-    secure: process.env.NODE_ENV === 'production', // Set to true if using HTTPS in production
-    httpOnly: true
-  }
 }));
 
 const upload = multer({ dest: 'uploads/' });
@@ -102,23 +93,26 @@ app.post('/generate-content', async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const { question } = req.body;
-
-    let history = req.session.history || [];
-    history.push(question);
-    if (history.length > 5) {
-      history = history.slice(-5);
-    }
-    req.session.history = history;
-
-    const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews.
-
-    **Previous Conversations:**
-    ${history.join('\n')}
-
+    const prompt = You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
+    Analyze the user's input carefully. Determine their intent:
+    
+    * **Greeting:** If the user simply greets you ("Hello," "Hi there," etc.), respond with a friendly greeting in return, but avoid mentioning interview-related topics.
+    * **Direct Question:** If the user asks a question about the interview process, specific questions, or preparation strategies, provide a clear, concise, and helpful answer based on your knowledge.
+    * **Vague Statement or Request:** If the user's input is unclear or too broad, gently guide them towards asking a specific question that you can address.
+    * **Off-Topic:** If the user's input is unrelated to interview preparation, politely answer them and you can also go offtopic as per the user demands and requirements, but for only educational and emotional support.
+    *  **Commonly asked questions (interpersonal and technical):** If the user asks for commonly asked interview questions then reply back to the user with the commonly asked interpersonal questions or technical questions as asked by the user.
+    
+    Always maintain a professional, supportive, and encouraging tone. Aim to boost the user's confidence and help them feel well-prepared for their interview.
+    
+    **Additional Considerations:**
+    
+    * **Personalization:** If possible, consider ways to personalize your responses based on the user's specific job field or experience level.
+    * **Data Collection:** If applicable, you can collect data on common user questions or pain points to improve the assistant's responses over time.
+    * **Integration with Resources:** If your project allows, integrate links to relevant articles, videos, or practice tools to provide additional support.
+    
     **The User Input is:**
-    "${question}"
-
-    Please respond based on the user's input and previous conversations. Ensure that your response acknowledges and builds upon the context of the ongoing conversation.`;
+    
+    "${question}";
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -129,9 +123,7 @@ app.post('/generate-content', async (req, res) => {
     res.status(500).json({ error: 'Error generating content' });
   }
 });
-
-
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(Server is running on port ${port});
 });
