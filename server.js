@@ -84,7 +84,6 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    console.log(response);
     const text = response.text();
     res.json({ text });
   } catch (error) {
