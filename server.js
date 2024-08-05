@@ -36,7 +36,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     } else {
       return res.status(400).json({ error: 'Unsupported file type.' });
     }
-    fs.unlinkSync(req.file.path); 
+    await fs.unlinkSync(req.file.path); 
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
  const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
 
@@ -74,7 +74,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    const text = await response.text();
     res.json({ text });
   } catch (error) {
     console.error('Error generating content:', error);
@@ -108,7 +108,7 @@ app.post('/generate-content', async (req, res) => {
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    const text = await response.text();
     res.json({ text });
   } catch (error) {
     console.error('Error generating content:', error);
