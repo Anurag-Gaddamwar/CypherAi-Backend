@@ -115,29 +115,15 @@ app.post('/generate-content', async (req, res) => {
     req.session.history = history; // Update session history
     
     // Construct prompt with current and past interactions
-    const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
-    Analyze the user's input and the conversation history between you and the user carefully and then respond accordingly. Determine their intent:
+const prompt = `You are CypherAI. The user has been asking about interview preparation. Here is their latest input:
 
-    * **Greeting:** If the user simply greets you ("Hello," "Hi there," etc.), respond with a friendly greeting in return, but avoid mentioning interview-related topics.
-    * **Direct Question:** If the user asks a question about the interview process, specific questions, or preparation strategies, provide a clear, concise, and helpful answer based on your knowledge.
-    * **Vague Statement or Request:** If the user's input is unclear or too broad, gently guide them towards asking a specific question that you can address.
-    * **Off-Topic:** If the user's input is unrelated to interview preparation, politely answer them and you can also go offtopic as per the user demands and requirements, but for only educational and emotional support.
-    * **Commonly Asked Questions (interpersonal and technical):** If the user asks for commonly asked interview questions then reply back to the user with the commonly asked interpersonal questions or technical questions as asked by the user.
+"${question}"
 
-    Always maintain a professional, supportive, and encouraging tone. Aim to boost the user's confidence and help them feel well-prepared for their interview.
+In the context of the ongoing conversation, respond accordingly. Remember to consider the previous interactions which are as follows:
 
-    **Additional Considerations:**
+${history.join('\n')}
 
-    * **Personalization:** If possible, consider ways to personalize your responses based on the user's specific job field or experience level.
-    * **Data Collection:** If applicable, you can collect data on common user questions or pain points to improve the assistant's responses over time.
-    * **Integration with Resources:** If your project allows, integrate links to relevant articles, videos, or practice tools to provide additional support.
-
-    **The User Input is:**
-
-    "${question}"
-
-    **Previous Conversations:**
-    ${history.join('\n')}`;
+Your response should build upon this conversation and maintain continuity.`;
     
     // Generate response from the AI model
     const result = await model.generateContent(prompt);
