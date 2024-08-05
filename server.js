@@ -100,17 +100,21 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 
 app.post('/generate-content', async (req, res) => {
   try {
+    // Get the AI model instance
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    
+    // Extract question from request body
     const { question } = req.body;
+
+    // Retrieve and update conversation history
     let history = req.session.history || [];
     history.push(question);
     if (history.length > 5) {
-      history = history.slice(-5);
+      history = history.slice(-5); // Keep the last 5 interactions
     }
-
-    req.session.history = history;
-    console.log(history);
+    req.session.history = history; // Update session history
     
+    // Construct prompt with current and past interactions
     const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
     Analyze the user's input and the conversation history between you and the user carefully and then respond accordingly. Determine their intent:
 
@@ -118,7 +122,7 @@ app.post('/generate-content', async (req, res) => {
     * **Direct Question:** If the user asks a question about the interview process, specific questions, or preparation strategies, provide a clear, concise, and helpful answer based on your knowledge.
     * **Vague Statement or Request:** If the user's input is unclear or too broad, gently guide them towards asking a specific question that you can address.
     * **Off-Topic:** If the user's input is unrelated to interview preparation, politely answer them and you can also go offtopic as per the user demands and requirements, but for only educational and emotional support.
-    *  **Commonly asked questions (interpersonal and technical):** If the user asks for commonly asked interview questions then reply back to the user with the commonly asked interpersonal questions or technical questions as asked by the user.
+    * **Commonly Asked Questions (interpersonal and technical):** If the user asks for commonly asked interview questions then reply back to the user with the commonly asked interpersonal questions or technical questions as asked by the user.
 
     Always maintain a professional, supportive, and encouraging tone. Aim to boost the user's confidence and help them feel well-prepared for their interview.
 
@@ -131,14 +135,19 @@ app.post('/generate-content', async (req, res) => {
     **The User Input is:**
 
     "${question}"
+
     **Previous Conversations:**
     ${history.join('\n')}`;
     
+    // Generate response from the AI model
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = await response.text();
+
+    // Send response back to the client
     res.json({ text });
   } catch (error) {
+    // Log and return error
     console.error('Error generating content:', error);
     res.status(500).json({ error: 'Error generating content' });
   }
