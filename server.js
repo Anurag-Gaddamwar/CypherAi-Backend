@@ -93,7 +93,7 @@ app.post('/generate-content', async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const { question } = req.body;
-    const prompt = You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
+    const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
     Analyze the user's input carefully. Determine their intent:
     
     * **Greeting:** If the user simply greets you ("Hello," "Hi there," etc.), respond with a friendly greeting in return, but avoid mentioning interview-related topics.
@@ -112,7 +112,7 @@ app.post('/generate-content', async (req, res) => {
     
     **The User Input is:**
     
-    "${question}";
+    "${question}"`;
     
     const result = await model.generateContent(prompt);
     const response = await result.response;
