@@ -6,34 +6,26 @@ const pdfParse = require('pdf-parse');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Tesseract = require('tesseract.js'); // Add this for OCR
 require('dotenv').config();
-
 const app = express();
 const port = process.env.PORT || 3001;
-
 const API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
-
 app.use(express.json());
 app.use(cors({
   origin: ['https://cypher-ai.vercel.app', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
-
 const upload = multer({ dest: 'uploads/' });
-
 app.post('/upload-file', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file was uploaded.' });
     }
-
     let fileContent = '';
     let jobRole = '';
-
     if (req.body.jobRole) {
       jobRole = req.body.jobRole;
     }
-
     if (req.file.mimetype === 'application/pdf') {
       const dataBuffer = fs.readFileSync(req.file.path);
       const data = await pdfParse(dataBuffer);
@@ -44,9 +36,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     } else {
       return res.status(400).json({ error: 'Unsupported file type.' });
     }
-
     fs.unlinkSync(req.file.path); 
-
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
  const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
 
@@ -91,19 +81,17 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     res.status(500).json({ error: 'Error generating content' });
   }
 });
-
 app.post('/generate-content', async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const { question } = req.body;
     const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
-
     Analyze the user's input carefully. Determine their intent:
     
     * **Greeting:** If the user simply greets you ("Hello," "Hi there," etc.), respond with a friendly greeting in return, but avoid mentioning interview-related topics.
     * **Direct Question:** If the user asks a question about the interview process, specific questions, or preparation strategies, provide a clear, concise, and helpful answer based on your knowledge.
     * **Vague Statement or Request:** If the user's input is unclear or too broad, gently guide them towards asking a specific question that you can address.
-    * **Off-Topic:** If the user's input is unrelated to interview preparation, politely redirect them back to the main topic.
+    * **Off-Topic:** If the user's input is unrelated to interview preparation, politely answer them and you can also go offtopic as per the user demands and requirements, but for only educational and emotional support.
     *  **Commonly asked questions (interpersonal and technical):** If the user asks for commonly asked interview questions then reply back to the user with the commonly asked interpersonal questions or technical questions as asked by the user.
     
     Always maintain a professional, supportive, and encouraging tone. Aim to boost the user's confidence and help them feel well-prepared for their interview.
@@ -127,7 +115,6 @@ app.post('/generate-content', async (req, res) => {
     res.status(500).json({ error: 'Error generating content' });
   }
 });
-
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
