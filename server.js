@@ -109,6 +109,7 @@ app.post('/generate-content', async (req, res) => {
     }
 
     req.session.history = history;
+    console.log(history);
     
     const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews. 
     Analyze the user's input and the conversation history between you and the user carefully and then respond accordingly. Determine their intent:
