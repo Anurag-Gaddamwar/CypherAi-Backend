@@ -122,6 +122,38 @@ app.post('/generate-content', async (req, res) => {
   }
 });
 
+app.post('/generate-roadmap', async (req, res) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const { currentQuery } = req.body;
+
+    const prompt = `
+  You are CypherAI, an advanced interview preparation assistant. Create a comprehensive learning roadmap for a fresher aiming for the job role specified below. The roadmap should start with foundational skills and progress to advanced topics, with realistic timelines for achieving intermediate proficiency. Ensure the learning path is structured and covers all essential skills and tools for the role.
+
+  **Job Role:** "${currentQuery}"
+
+  **Response Format:**
+  1. **Skill 1:** [Number of days]
+  2. **Skill 2:** [Number of days]
+  3. **Skill 3:** [Number of days]
+  4. **Skill 4:** [Number of days]
+  5. **Skill 5:** [Number of days]
+   ...
+
+  Allocate days based on typical learning requirements, ensuring the roadmap covers all key areas from basics to advanced skills relevant to the job role. Provide only the skills and the number of days required for each.
+    `;
+    
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = await response.text();
+    console.log(text);
+    res.json({ text });
+  } catch (error) {
+    console.error('Error generating content:', error);
+    res.status(500).json({ error: 'Error generating content' });
+  }
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
