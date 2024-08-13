@@ -190,7 +190,7 @@ app.post('/conduct-interview', upload.single('resume'), async (req, res) => {
       Provide 10 relevant interview questions. Don't provide even a single word extra other than the questions, not even a heading, strictly follow the output format. Remember the first question is most likely "Tell me something about yourself" in almost all interviews.
 
       Output Format: 
-      - 3 interview questions
+      - 10 interview questions
     `;
 
     const result = await model.generateContent(prompt);
