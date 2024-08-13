@@ -9,6 +9,8 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3001;
 const API_KEY = process.env.GEMINI_API_KEY;
+const { recognize } = require('tesseract.js-node');
+
 const genAI = new GoogleGenerativeAI(API_KEY);
 app.use(express.json());
 app.use(cors({
@@ -140,6 +142,153 @@ app.post('/generate-roadmap', async (req, res) => {
     res.status(500).json({ error: 'Error generating content' });
   }
 });
+
+
+app.post('/conduct-interview', upload.single('resume'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file was uploaded.' });
+    }
+
+    let fileContent = '';
+    let jobRole = '';
+    let interviewType = '';
+
+    // Extract values from request body
+    if (req.body.jobRole) {
+      jobRole = req.body.jobRole;
+    }
+    if (req.body.interviewType) {
+      interviewType = req.body.interviewType;
+    }
+
+    if (req.file.mimetype === 'application/pdf') {
+      // Extract text from PDF
+      const dataBuffer = fs.readFileSync(req.file.path);
+      const data = await pdfParse(dataBuffer);
+      fileContent = data.text;
+    } else if (['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
+      // Extract text from image using OCR
+      const result = await recognize(req.file.path, 'eng');
+      fileContent = result.data.text;
+    } else {
+      return res.status(400).json({ error: 'Unsupported file type.' });
+    }
+
+    // Generate content using GEMINI API
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const prompt = `
+      You are conducting an interview. You have to provide 10 relevant questions based on the interview type (HR or Technical).
+
+      Here is the candidate's resume and job role:
+
+      Resume: ${fileContent}
+      Job Role: ${jobRole}
+      Interview Type: ${interviewType} Interview
+
+      Your task is to:
+      Provide 10 relevant interview questions. Don't provide even a single word extra other than the questions, not even a heading, strictly follow the output format. Remember the first question is most likely "Tell me something about yourself" in almost all interviews.
+
+      Output Format: 
+      - 3 interview questions
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    
+    // Assuming the response content is a single string
+    const text = response.text(); // Get the string content from the response
+    console.log(text);
+    res.send(text); // Send plain text response
+  } catch (error) {
+    console.error('Error generating content:', error);
+    res.status(500).json({ error: 'Error generating content' });
+  }
+});
+
+app.post('/get-feedback', async (req, res) => {
+  try {
+    const { answers } = req.body;
+
+    if (!answers || Object.keys(answers).length === 0) {
+      return res.status(400).json({ error: 'No answers provided.' });
+    }
+
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+    // Construct the prompt for feedback generation
+    const prompt = `
+      You are an expert interviewer providing feedback on a candidate's responses.
+
+Here are the interview questions and the candidate's answers:
+
+${Object.entries(answers).map(([question, answer]) => `Question: ${question}\nAnswer: ${answer}`).join('\n\n')}
+
+Your task is to:
+- Provide a detailed and structured feedback report.
+- Include an "Overall Performance" summary.
+- Offer "Suggestions for Improvement."
+- Provide "Specific Feedback" for each question, covering:
+  - Quality
+  - Clarity
+  - Relevance
+  - Completeness
+  - Improvement Suggestions
+
+Ensure your feedback is comprehensive, clear, and actionable, and cover all the questions provided. Use the following format:
+
+**Overall Performance:**
+
+[Summary of overall performance based on the answers provided.]
+
+**Suggestions for Improvement:**
+- [Suggestion 1]
+- [Suggestion 2]
+- [Suggestion 3]
+- [Additional suggestions as needed]
+
+**Specific Feedback:**
+**1. [Question 1]**
+
+* **Quality:** [Evaluation]
+* **Clarity:** [Evaluation]
+* **Relevance:** [Evaluation]
+* **Completeness:** [Evaluation]
+* **Improvement Suggestion:** [Detailed suggestion for improvement]
+
+**2. [Question 2]**
+
+* **Quality:** [Evaluation]
+* **Clarity:** [Evaluation]
+* **Relevance:** [Evaluation]
+* **Completeness:** [Evaluation]
+* **Improvement Suggestion:** [Detailed suggestion for improvement]
+
+...
+
+**N. [Question N]**
+
+* **Quality:** [Evaluation]
+* **Clarity:** [Evaluation]
+* **Relevance:** [Evaluation]
+* **Completeness:** [Evaluation]
+* **Improvement Suggestion:** [Detailed suggestion for improvement]
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    
+    // Assuming the response content is a single string
+    const feedbackText = response.text(); // Get the string content from the response
+    console.log(feedbackText);
+    res.send({ feedback: feedbackText }); // Send feedback as JSON
+  } catch (error) {
+    console.error('Error generating feedback:', error);
+    res.status(500).json({ error: 'Error generating feedback' });
+  }
+});
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
