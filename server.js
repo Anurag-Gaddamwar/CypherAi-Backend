@@ -9,7 +9,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3001;
 const API_KEY = process.env.GEMINI_API_KEY;
-const { recognize } = require('tesseract.js-node');
+const { recognize } = require('tesseract.js-node'); 
 
 const genAI = new GoogleGenerativeAI(API_KEY);
 app.use(express.json());
