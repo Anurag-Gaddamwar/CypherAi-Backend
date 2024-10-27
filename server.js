@@ -17,19 +17,22 @@ app.use(cors({
   origin: ['https://cypher-ai.vercel.app', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
+
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: 600 });
+
 const upload = multer({ dest: 'uploads/' });
 app.post('/upload-file', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file was uploaded.' });
     }
+
     let fileContent = '';
-    let jobRole = '';
-    if (req.body.jobRole) {
-      jobRole = req.body.jobRole;
-    }
+    let jobRole = req.body.jobRole || '';
+
     if (req.file.mimetype === 'application/pdf') {
-      const dataBuffer = fs.readFileSync(req.file.path);
+      const dataBuffer = await fs.readFile(req.file.path);
       const data = await pdfParse(dataBuffer);
       fileContent = data.text;
     } else if (['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
@@ -38,11 +41,13 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     } else {
       return res.status(400).json({ error: 'Unsupported file type.' });
     }
-    await fs.unlinkSync(req.file.path); 
+
+    await fs.unlink(req.file.path); 
+
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
- const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
+    const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}". 
     Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually aligns with the specified job role, which makes it hard to believe the score, so analyse very critically and then give me the scores, the scores may be less, doesn't matter, but they should be genuine.  
-    
+
     Assessment Criteria:
     
     1. ATS Compatibility:
@@ -57,6 +62,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     4. Strengths:
         - Highlight the resume's most compelling aspects that align with the job requirements (e.g., quantifiable achievements, relevant skills, strong experience).
         - Emphasize skills and experiences that directly relate to the job role. Showcase any expertise or knowledge areas that are crucial for the position, including any special projects or responsibilities that align with the job’s demands.
+    
     5. Areas of Improvement:
         - Assess how well the resume matches the job description. Identify any missing skills, experiences, or qualifications that are important for the role and suggest ways to better align the resume with these requirements.
         - Provide targeted advice on how to improve the resume. This could include suggestions for rephrasing, adding specific details, or highlighting particular experiences or skills to make the resume more appealing to recruiters for the target job. (Remember that you can consider giving suggestions about the formatting and structure of the resume, but since you only receive the text response hence, the actual formatting and spacing can't be maintained here)
@@ -68,19 +74,22 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     Structure and Formatting Score (in %): Assess the resume's organization and readability. The score should be between 0 to 90. (provide only score)
     Overall Resume Score (in %): Provide an overall score considering all factors. The score should be between 0 to 80. (provide only score)
     Strengths: List the resume's top strengths, with specific examples from the resume.
-    Areas for Improvement: List areas for improvement, offering actionable suggestions for each and mention the specific area where there are gramatical errors or any sort of faults if any.
-    
-   
-    {imp note] - Check properly if the content does not appear to be a resume, and  please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided.;`
+    Areas for Improvement: List areas for improvement, offering actionable suggestions for each and mention the specific area where there are grammatical errors or any sort of faults if any.
+
+    [Important Note] - Check properly if the content does not appear to be a resume, and please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided.`;
+
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = await response.text();
+    
     res.json({ text });
   } catch (error) {
     console.error('Error generating content:', error);
     res.status(500).json({ error: 'Error generating content' });
   }
 });
+
+
 app.post('/generate-content', async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
