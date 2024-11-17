@@ -40,7 +40,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'Unsupported file type.' });
     }
     await fs.unlinkSync(req.file.path); 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
  const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
     Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score betn 80-90, even if the resume doesn't actually aligns with the specified job role, which makes it hard to believe the score, so analyse very critically and then give me the scores, the scores may be less, doesn't matter, but they should be genuine.  
     
@@ -84,7 +84,7 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 });
 app.post('/generate-content', async (req, res) => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
     const { currentQuery, prevConversation } = req.body;
     const prompt = `You are CypherAI, an advanced interview preparation assistant. Your role is to engage in natural, conversational interactions with users who are preparing for job interviews.
     Analyze the user's input carefully. Determine their intent:
@@ -116,7 +116,7 @@ app.post('/generate-content', async (req, res) => {
 
 app.post('/generate-roadmap', async (req, res) => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
     const { currentQuery } = req.body;
 
     const prompt = `
@@ -177,7 +177,7 @@ app.post('/conduct-interview', upload.single('resume'), async (req, res) => {
     }
 
     // Generate content using GEMINI API
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
     const prompt = `
       You are conducting an interview. You have to provide 10 relevant questions based on the interview type (HR or Technical).
 
@@ -215,7 +215,7 @@ app.post('/get-feedback', async (req, res) => {
       return res.status(400).json({ error: 'No answers provided.' });
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
     // Construct the prompt for feedback generation
     const prompt = `
