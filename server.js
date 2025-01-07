@@ -259,7 +259,7 @@ app.post('/get-feedback', async (req, res) => {
     1. [Specific Suggestion 1]
     2. [Specific Suggestion 2]
     3. [Specific Suggestion 3]
-    [Include additional suggestions if applicable.]
+    [There can be some error in transcribing the user's responses due to inefficient speech recognition so neglect some unexpected words and grammar (in obvious situations).]
 
     **Interview Result:** 
     If selected: Yes
