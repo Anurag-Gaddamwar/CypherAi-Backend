@@ -123,30 +123,60 @@ app.post('/generate-roadmap', async (req, res) => {
     const { currentQuery } = req.body;
 
     const prompt = `
-  You are CypherAI, an advanced interview preparation assistant. Create a comprehensive learning roadmap for a fresher aiming for the job role specified below. The roadmap should start with foundational skills and progress to advanced topics (still basic since it's for a just passout B.Tech graduate), with realistic timelines for achieving intermediate proficiency. Ensure the learning path is structured and covers all essential skills and tools for the role.
-  **Job Role:** "${currentQuery}"
-  **Response Format:**
-  1. **Skill 1:** [Number of days]
-  2. **Skill 2:** [Number of days]
-  3. **Skill 3:** [Number of days]
-  4. **Skill 4:** [Number of days]
-  5. **Skill 5:** [Number of days]
-  ...
-  Allocate days based on typical learning requirements, ensuring the roadmap covers all key areas from basics to advanced skills relevant to the job role. Provide only the skills and the number of days required for each.
-    `;
+    You are CypherAI, an advanced interview preparation assistant. Create a comprehensive learning roadmap for a fresher aiming for the job role specified below. The roadmap should start with foundational skills and progress to advanced topics (still basic since it's for a just passout B.Tech graduate), with realistic timelines for achieving intermediate proficiency. Ensure the learning path is structured and covers all essential skills and tools for the role.
+    
+    **Job Role:** "${currentQuery}"
+
+    **Strict Response Format:**
+    1. **Skill 1:** [Number of days]  
+       - **YouTube Channel:** [Channel Name] ([Link])  
+    2. **Skill 2:** [Number of days]  
+       - **YouTube Channel:** [Channel Name] ([Link])  
+    3. **Skill 3:** [Number of days]  
+       - **YouTube Channel:** [Channel Name] ([Link])  
+    4. **Skill 4:** [Number of days]  
+       - **YouTube Channel:** [Channel Name] ([Link])  
+    5. **Skill 5:** [Number of days]  
+       - **YouTube Channel:** [Channel Name] ([Link])  
+    ...
+
+    Allocate days based on typical learning requirements, ensuring the roadmap covers all key areas from basics to advanced skills relevant to the job role. Include the names and links to popular Indian YouTube channels for learning each skill effectively and If a single channel covers multiple skills, mention it for all relevant skills, avoiding the repetition of different channels for each skill. Include only the YouTube channel name and link for reference—no other than that.
+  `;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = await response.text();
 
-    // Remove unnecessary characters like '**' and trim lines
+    // Clean and format the raw text
     text = text
       .split('\n') // Split text into lines
       .map(line => line.replace(/\*\*/g, '').trim()) // Remove '**' and trim whitespace
       .join('\n'); // Join lines back into a single string
 
-    console.log(text);
-    res.json({ text });
+    console.log('Raw Response:', text);
+
+    // Updated regex to capture the skill, days, channel, and link more reliably
+    const regex = /(\d+)\.\s(.*?)\:\s\[(\d+)\sday[s]?\]\s*-\s*YouTube\sChannel:\s(.*?)\s\(\[(.*?)\]\)/g;
+
+    let matches;
+    const parsedData = [];
+
+    // Execute the regex on the raw text
+    while ((matches = regex.exec(text)) !== null) {
+      const skill = matches[2].trim();
+      const days = parseInt(matches[3], 10);
+      const channel = matches[4].trim();
+      const link = matches[5].trim();
+
+      parsedData.push({ skill, days, channel, link });
+    }
+
+    // Log the parsed data for debugging
+    console.log('Parsed Roadmap Data:', parsedData);
+
+    // Send parsed data in the response
+    res.json({ parsedData });
+
   } catch (error) {
     console.error('Error generating content:', error);
     res.status(500).json({ error: 'Error generating content' });
@@ -155,67 +185,7 @@ app.post('/generate-roadmap', async (req, res) => {
 
 
 
-app.post('/conduct-interview', upload.single('resume'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file was uploaded.' });
-    }
 
-    let fileContent = '';
-    let jobRole = '';
-    let interviewType = '';
-
-    // Extract values from request body
-    if (req.body.jobRole) {
-      jobRole = req.body.jobRole;
-    }
-    if (req.body.interviewType) {
-      interviewType = req.body.interviewType;
-    }
-
-    if (req.file.mimetype === 'application/pdf') {
-      // Extract text from PDF
-      const dataBuffer = fs.readFileSync(req.file.path);
-      const data = await pdfParse(dataBuffer);
-      fileContent = data.text;
-    } else if (['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
-      // Extract text from image using OCR
-      const result = await recognize(req.file.path, 'eng');
-      fileContent = result.data.text;
-    } else {
-      return res.status(400).json({ error: 'Unsupported file type.' });
-    }
-
-    // Generate content using GEMINI API
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
-    const prompt = `
-      You are conducting an interview. You have to provide 2 relevant questions based on the interview type (HR or Technical).
-
-      Here is the candidate's resume and job role:
-
-      Resume: ${fileContent}
-      Job Role: ${jobRole}
-      Interview Type: ${interviewType === "Both" ? "HR plus Technical" : interviewType} Interview
-
-      Your task is to:
-      Provide 2 relevant basic but frequently asked important fresher level interview questions based on the job role. Don't provide even a single word extra other than the questions, not even a heading, strictly follow the output format. Remember the first question is most likely "Tell me something about yourself" in almost all interviews.
-
-      Output Format: 
-      - 2 interview questions
-    `;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    
-    // Assuming the response content is a single string
-    const text = response.text(); // Get the string content from the response
-    console.log(text);
-    res.send(text); // Send plain text response
-  } catch (error) {
-    console.error('Error generating content:', error);
-    res.status(500).json({ error: 'Error generating content' });
-  }
-});
 
 app.post('/get-feedback', async (req, res) => {
   try {
@@ -259,7 +229,7 @@ app.post('/get-feedback', async (req, res) => {
     1. [Specific Suggestion 1]
     2. [Specific Suggestion 2]
     3. [Specific Suggestion 3]
-    [There can be some error in transcribing the user's responses due to inefficient speech recognition so neglect some unexpected words and grammar (in obvious situations).]
+    [Include additional suggestions if applicable.]
 
     **Interview Result:** 
     If selected: Yes
