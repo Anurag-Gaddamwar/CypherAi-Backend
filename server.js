@@ -184,7 +184,67 @@ app.post('/generate-roadmap', async (req, res) => {
 });
 
 
+app.post('/conduct-interview', upload.single('resume'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file was uploaded.' });
+    }
 
+    let fileContent = '';
+    let jobRole = '';
+    let interviewType = '';
+
+    // Extract values from request body
+    if (req.body.jobRole) {
+      jobRole = req.body.jobRole;
+    }
+    if (req.body.interviewType) {
+      interviewType = req.body.interviewType;
+    }
+
+    if (req.file.mimetype === 'application/pdf') {
+      // Extract text from PDF
+      const dataBuffer = fs.readFileSync(req.file.path);
+      const data = await pdfParse(dataBuffer);
+      fileContent = data.text;
+    } else if (['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
+      // Extract text from image using OCR
+      const result = await recognize(req.file.path, 'eng');
+      fileContent = result.data.text;
+    } else {
+      return res.status(400).json({ error: 'Unsupported file type.' });
+    }
+
+    // Generate content using GEMINI API
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const prompt = `
+      You are conducting an interview. You have to provide 2 relevant questions based on the interview type (HR or Technical).
+
+      Here is the candidate's resume and job role:
+
+      Resume: ${fileContent}
+      Job Role: ${jobRole}
+      Interview Type: ${interviewType === "Both" ? "HR plus Technical" : interviewType} Interview
+
+      Your task is to:
+      Provide 2 relevant basic but frequently asked important fresher level interview questions based on the job role. Don't provide even a single word extra other than the questions, not even a heading, strictly follow the output format. Remember the first question is most likely "Tell me something about yourself" in almost all interviews.
+
+      Output Format: 
+      - 2 interview questions
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    
+    // Assuming the response content is a single string
+    const text = response.text(); // Get the string content from the response
+    console.log(text);
+    res.send(text); // Send plain text response
+  } catch (error) {
+    console.error('Error generating content:', error);
+    res.status(500).json({ error: 'Error generating content' });
+  }
+});
 
 
 app.post('/get-feedback', async (req, res) => {
