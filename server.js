@@ -42,24 +42,24 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
 
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
     const prompt = `This is my resume: "${fileContent}". I am aiming for the job role "${jobRole}".
-    Please analyze this resume in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses. Also I have seen that you are always giving the score between 80-90, even if the resume doesn't actually align with the specified job role, which makes it hard to believe the score, so analyze very critically and then give me the scores; the scores may be less, doesn't matter, but they should be genuine.  
+    Please analyze this resume completely in the context of the specified job role, providing both individual metrics and a comprehensive assessment of its strengths and weaknesses wrt the job role. Also I have seen that you are always giving the score between 80-90, even if the resume doesn't actually align with the specified job role, which makes it hard to believe the score, so analyze very critically and then give me the scores; the scores may be less, doesn't matter, but they should be genuine.  
     
     Assessment Criteria:
     
-    1. ATS Compatibility:
-        - Assess the resume's adherence to ATS standards, including keyword optimization, formatting, and structure.
+    ATS Compatibility:
+        - Assess the resume's adherence to ATS standards, including keyword optimization, formatting, and structure with respect to the job Role, "${jobRole}".
         
-    2. Content and Relevance:
+    Content and Relevance:
         - Evaluate the alignment between the resume's content (skills, experience, education) and the requirements of the job role.
     
-    3. Structure and Formatting:
+    Structure and Formatting:
         - Assess the overall organization and readability of the resume along with the clarity and conciseness of section headings and bullet points.
     
-    4. Strengths:
-        - Highlight the resume's most compelling aspects that align with the job requirements (e.g., quantifiable achievements, relevant skills, strong experience).
-        - Emphasize skills and experiences that directly relate to the job role. Showcase any expertise or knowledge areas that are crucial for the position, including any special projects or responsibilities that align with the job’s demands.
+    Strengths:
+        - Highlight the resume's most compelling aspects that align with the job requirements (e.g., quantifiable achievements, relevant skills, strong experience for the job Role, "${jobRole}").
+        - Emphasize skills and experiences that directly relate to the job Role, "${jobRole}". Showcase any expertise or knowledge areas that are crucial for the position, including any special projects or responsibilities that align with the job’s demands.
     
-    5. Areas of Improvement:
+    Areas of Improvement:
         - Assess how well the resume matches the job description. Identify any missing skills, experiences, or qualifications that are important for the role and suggest ways to better align the resume with these requirements.
         - Provide targeted advice on how to improve the resume. This could include suggestions for rephrasing, adding specific details, or highlighting particular experiences or skills to make the resume more appealing to recruiters for the target job. (Remember that you can consider giving suggestions about the formatting and structure of the resume, but since you only receive the text response hence, the actual formatting and spacing can't be maintained here)
     
@@ -69,9 +69,9 @@ app.post('/upload-file', upload.single('file'), async (req, res) => {
     Content Relevance Score (in %): Rate the resume's alignment with the target job role. The score should be between 0 to 90. (provide only score)
     Structure and Formatting Score (in %): Assess the resume's organization and readability. The score should be between 0 to 90. (provide only score)
     Strengths: (4 points) List the resume's top strengths, with specific examples from the resume.
-    Areas for Improvement: (4 points) List areas for improvement, offering actionable suggestions for each and mention the specific area where there are grammatical errors or any sort of faults if any.
+    Areas for Improvement: (4 points) List areas for improvement, offering actionable suggestions for each and mention the specific area where there are grammatical errors or any sort of faults if any. Since I'm using OCR for extracting text, it's successfully fetching the text from the resume, but it occasionally combines characters without proper spacing. This can be overlooked as an area for improvement.
     
-    {imp note] - Check properly if the content does not appear to be a resume, and please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role provided and output must only have these things: 3 scores, strengths and area of improvement.`;
+    {imp note] - Check properly if the content does not appear to be a resume, and please indicate this in the output. Ensure the analysis is comprehensive, actionable, and tailored to the specific job role (${jobRole}) provided and output must only have these things: 3 scores, strengths and area of improvement.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -127,61 +127,60 @@ app.post('/generate-roadmap', async (req, res) => {
     
     **Job Role:** "${currentQuery}"
 
-    **Strict Response Format:**
-    1. **Skill 1:** [Number of days]  
-       - **YouTube Channel:** [Channel Name] ([Link])  
-    2. **Skill 2:** [Number of days]  
-       - **YouTube Channel:** [Channel Name] ([Link])  
-    3. **Skill 3:** [Number of days]  
-       - **YouTube Channel:** [Channel Name] ([Link])  
-    4. **Skill 4:** [Number of days]  
-       - **YouTube Channel:** [Channel Name] ([Link])  
-    5. **Skill 5:** [Number of days]  
-       - **YouTube Channel:** [Channel Name] ([Link])  
+    Strictly follow this Response Format (Don't give a single letter other than this format):
+    Skill 1 - Number of days
+       - YouTube Channel: Channel Name (Link)  
+    Skill 2 - Number of days
+       - YouTube Channel: Channel Name (Link)  
+    Skill 3 - Number of days 
+       - YouTube Channel: Channel Name (Link)  
+    Skill 4 - Number of days  
+       - YouTube Channel: Channel Name (Link)  
+    Skill 5 - Number of days
+       - YouTube Channel: Channel Name (Link)  
     ...
-
+    
     Allocate days based on typical learning requirements, ensuring the roadmap covers all key areas from basics to advanced skills relevant to the job role. Include the names and links to popular Indian YouTube channels for learning each skill effectively and If a single channel covers multiple skills, mention it for all relevant skills, avoiding the repetition of different channels for each skill. Include only the YouTube channel name and link for reference—no other than that.
   `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = await response.text();
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  let text = await response.text();
 
-    // Clean and format the raw text
-    text = text
-      .split('\n') // Split text into lines
-      .map(line => line.replace(/\*\*/g, '').trim()) // Remove '**' and trim whitespace
-      .join('\n'); // Join lines back into a single string
+  // Clean and format the raw text
+  text = text
+    .split('\n') // Split text into lines
+    .map(line => line.replace(/\*\*/g, '').trim()) // Remove '**' and trim whitespace
+    .join('\n'); // Join lines back into a single string
 
-    console.log('Raw Response:', text);
+  console.log('Raw Response:', text);
 
-    // Updated regex to capture the skill, days, channel, and link more reliably
-    const regex = /(\d+)\.\s(.*?)\:\s\[(\d+)\sday[s]?\]\s*-\s*YouTube\sChannel:\s(.*?)\s\(\[(.*?)\]\)/g;
+  const regex = /Skill\s\d+\s-\s(.+?)\s*-\s(\d+\sday[s]?)\n-\sYouTube\sChannel:\s(.+?)\s\((https?:\/\/[^\)]+)\)/g;
 
-    let matches;
-    const parsedData = [];
-
-    // Execute the regex on the raw text
-    while ((matches = regex.exec(text)) !== null) {
-      const skill = matches[2].trim();
-      const days = parseInt(matches[3], 10);
-      const channel = matches[4].trim();
-      const link = matches[5].trim();
-
-      parsedData.push({ skill, days, channel, link });
-    }
-
-    // Log the parsed data for debugging
-    console.log('Parsed Roadmap Data:', parsedData);
-
-    // Send parsed data in the response
-    res.json({ parsedData });
-
-  } catch (error) {
-    console.error('Error generating content:', error);
-    res.status(500).json({ error: 'Error generating content' });
+  let matches;
+  const parsedData = [];
+  
+  // Execute the regex on the raw text
+  while ((matches = regex.exec(text)) !== null) {
+    const skill = matches[1].trim();
+    const days = matches[2].trim();
+    const channel = matches[3].trim();
+    const link = matches[4].trim();
+  
+    parsedData.push({ skill, days, channel, link });
   }
+  
+  console.log('Parsed Roadmap Data:', parsedData);
+
+  // Send parsed data in the response
+  res.json({ parsedData });
+
+} catch (error) {
+  console.error('Error generating content:', error);
+  res.status(500).json({ error: 'Error generating content' });
+}
 });
+
 
 
 app.post('/conduct-interview', upload.single('resume'), async (req, res) => {
@@ -249,7 +248,13 @@ app.post('/conduct-interview', upload.single('resume'), async (req, res) => {
 
 app.post('/get-feedback', async (req, res) => {
   try {
+    // Log the raw data received from the frontend
+    console.log('Received data from frontend:', req.body);
+
     const { answers } = req.body;
+
+    // Additional logging for clarity
+    console.log('Parsed answers:', answers);
 
     if (!answers || Object.keys(answers).length === 0) {
       return res.status(400).json({ error: 'No answers provided.' });
@@ -259,7 +264,7 @@ app.post('/get-feedback', async (req, res) => {
 
     // Construct the prompt for feedback generation
     const prompt = `
-    You are an interviewer tasked with evaluating a candidate's responses to interview questions. Make sure you give 0 if the answers are completely irrelevant or if the user is just propmting back the questions only. But make sure to evaluate softly since the candidate is a fresher
+    You are an interviewer tasked with evaluating a candidate's responses to interview questions. Make sure you give 0 if the answers are completely irrelevant or if the user is just prompting back the questions only. But make sure to evaluate softly since the candidate is a fresher.
 
     Here are the interview questions and the candidate's answers:
 
@@ -301,13 +306,9 @@ app.post('/get-feedback', async (req, res) => {
 
     // Assuming the response content is a string that needs to be parsed
     const feedbackText = response.text();
-    console.log("\n\nActual response from GEMINI:\n");
-    console.log(feedbackText);
 
     // Parsing the feedback
     const feedback = parseFeedback(feedbackText);
-    console.log("\n\nWhat we have parsed and stored in the feedback object:\n")
-    console.log(feedback);
 
     res.send({ feedback }); // Send structured feedback as JSON
   } catch (error) {
@@ -315,6 +316,7 @@ app.post('/get-feedback', async (req, res) => {
     res.status(500).json({ error: 'Error generating feedback' });
   }
 });
+
 
 
 function parseFeedback(feedbackText) {
